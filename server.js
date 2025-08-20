@@ -1,7 +1,7 @@
 import cors from "cors";
+import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
-import dotenv from "dotenv";
 
 // Carregar variáveis de ambiente
 dotenv.config();
@@ -13,9 +13,12 @@ app.use(cors());
 app.use(express.json());
 
 // Conexão MongoDB
-const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://jhsabakeviski:ScQcAdeGqLZguiVt@cluster0.csmmdez.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const MONGO_URI =
+  process.env.MONGO_URI ||
+  "mongodb+srv://jhsabakeviski:ScQcAdeGqLZguiVt@cluster0.csmmdez.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
-mongoose.connect(MONGO_URI)
+mongoose
+  .connect(MONGO_URI)
   .then(() => console.log("MongoDB conectado!"))
   .catch((err) => console.error("Erro MongoDB:", err));
 
@@ -73,7 +76,7 @@ app.get("/notas/:id", async (req, res) => {
 app.put("/notas/:id", async (req, res) => {
   try {
     const { titulo, texto } = req.body;
-    
+
     // Validação básica
     if (!titulo || !texto) {
       return res.status(400).json({ error: "Título e texto são obrigatórios" });
@@ -84,14 +87,17 @@ app.put("/notas/:id", async (req, res) => {
       { titulo, texto },
       { new: true, runValidators: true }
     );
-    
+
     if (!nota) {
       return res.status(404).json({ error: "Nota não encontrada" });
     }
-    
+
     res.json(nota);
   } catch (err) {
-    res.status(500).json({ error: "Erro ao atualizar nota" });
+    console.error("Erro ao atualizar nota:", err);
+    res
+      .status(500)
+      .json({ error: "Erro ao atualizar nota", details: err.message });
   }
 });
 
@@ -99,14 +105,17 @@ app.put("/notas/:id", async (req, res) => {
 app.delete("/notas/:id", async (req, res) => {
   try {
     const nota = await Nota.findByIdAndDelete(req.params.id);
-    
+
     if (!nota) {
       return res.status(404).json({ error: "Nota não encontrada" });
     }
-    
+
     res.json({ message: "Nota excluída com sucesso" });
   } catch (err) {
-    res.status(500).json({ error: "Erro ao excluir nota" });
+    console.error("Erro ao excluir nota:", err);
+    res
+      .status(500)
+      .json({ error: "Erro ao excluir nota", details: err.message });
   }
 });
 
