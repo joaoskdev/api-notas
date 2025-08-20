@@ -1,101 +1,60 @@
-// index.js - API com conexão ao MongoDB
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-require("dotenv").config();
+import cors from "cors";
+import express from "express";
+import mongoose from "mongoose";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Conexão com o MongoDB Atlas
+// Conexão MongoDB (substituir pela sua URI do Render ou Atlas)
+const MONGO_URI =
+  process.env.MONGO_URI ||
+  "mongodb+srv://jhsabakeviski:ScQcAdeGqLZguiVt@cluster0.csmmdez.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 mongoose
-  .connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
-    console.log("Conectado ao MongoDB Atlas!");
-  })
-  .catch((err) => {
-    console.error("Erro ao conectar com MongoDB:", err.message);
-  });
+  .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log("MongoDB conectado!"))
+  .catch((err) => console.error("Erro MongoDB:", err));
 
-// Defina um schema e modelo para seus dados
-const dataSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  value: {
-    type: mongoose.Schema.Types.Mixed,
-    required: true,
-  },
-  timestamp: {
-    type: Date,
-    default: Date.now,
-  },
+// Schema e Model
+const notaSchema = new mongoose.Schema({
+  titulo: { type: String, required: true },
+  texto: { type: String, required: true },
+  criadoEm: { type: Date, default: Date.now },
 });
 
-const DataModel = mongoose.model("Data", dataSchema);
+const Nota = mongoose.model("Nota", notaSchema);
 
-// Rota de teste
-app.get("/", (req, res) => {
-  res.json({
-    message: "API funcionando e conectada ao MongoDB!",
-    status: "OK",
-    timestamp: new Date().toISOString(),
-  });
-});
-
-// Rota para salvar dados no MongoDB
-app.post("/api/save", async (req, res) => {
+// Rota para salvar nota
+app.post("/notas", async (req, res) => {
   try {
-    const { name, value } = req.body;
+    const { titulo, texto } = req.body;
 
-    const newData = new DataModel({
-      name,
-      value,
-    });
+    if (!titulo || !texto) {
+      return res.status(400).json({ error: "Título e texto são obrigatórios" });
+    }
 
-    const savedData = await newData.save();
+    const novaNota = new Nota({ titulo, texto });
+    await novaNota.save();
 
-    res.json({
-      success: true,
-      message: "Dados salvos com sucesso!",
-      data: savedData,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Erro ao salvar dados",
-      error: error.message,
-    });
+    res.json(novaNota);
+  } catch (err) {
+    console.error("Erro ao salvar nota:", err);
+    res.status(500).json({ error: "Erro interno do servidor" });
   }
 });
 
-// Rota para buscar dados do MongoDB
-app.get("/api/data", async (req, res) => {
+// Rota para listar notas
+app.get("/notas", async (req, res) => {
   try {
-    const data = await DataModel.find().sort({ timestamp: -1 });
-
-    res.json({
-      success: true,
-      data,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Erro ao buscar dados",
-      error: error.message,
-    });
+    const notas = await Nota.find().sort({ criadoEm: -1 });
+    res.json(notas);
+  } catch (err) {
+    res.status(500).json({ error: "Erro ao buscar notas" });
   }
 });
 
 // Iniciar servidor
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
