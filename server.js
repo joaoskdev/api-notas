@@ -26,22 +26,15 @@ const notaSchema = new mongoose.Schema({
 
 const Nota = mongoose.model("Nota", notaSchema);
 
-// Rota para salvar nota
 app.post("/notas", async (req, res) => {
   try {
-    const { titulo, texto } = req.body;
+    console.log("Recebido do frontend:", req.body);
 
-    if (!titulo || !texto) {
-      return res.status(400).json({ error: "Título e texto são obrigatórios" });
-    }
-
-    const novaNota = new Nota({ titulo, texto });
-    await novaNota.save();
-
-    res.json(novaNota);
+    const nota = await Note.create(req.body);
+    res.status(201).json(nota);
   } catch (err) {
-    console.error("Erro ao salvar nota:", err);
-    res.status(500).json({ error: "Erro interno do servidor" });
+    console.error("Erro ao salvar nota:", err.message);
+    res.status(500).json({ error: "Erro no servidor", details: err.message });
   }
 });
 
