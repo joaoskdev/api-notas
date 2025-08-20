@@ -14,8 +14,7 @@ app.use(express.json());
 
 // Conexão MongoDB
 const MONGO_URI =
-  process.env.MONGO_URI ||
-  "mongodb+srv://jhsabakeviski:ScQcAdeGqLZguiVt@cluster0.csmmdez.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+  process.env.MONGO_URI;
 
 mongoose
   .connect(MONGO_URI)
