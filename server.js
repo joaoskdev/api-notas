@@ -1,129 +1,56 @@
-import cors from "cors";
-import dotenv from "dotenv";
-import express from "express";
-import mongoose from "mongoose";
+const express = require("express");
+const cors = require("cors");
+require("dotenv").config();
 
-// Carregar variáveis de ambiente
-dotenv.config();
+const connectDB = require("./config/database");
+const notasRoutes = require("./routes/notas");
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-// Middleware
+// Conectar ao MongoDB
+connectDB();
+
+// Middlewares
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Conexão MongoDB
-const MONGO_URI =
-  process.env.MONGO_URI ||
-  "mongodb+srv://jhsabakeviski:ScQcAdeGqLZguiVt@cluster0.csmmdez.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+// Routes
+app.use("/notas", notasRoutes);
 
-mongoose
-  .connect(MONGO_URI)
-  .then(() => console.log("MongoDB conectado!"))
-  .catch((err) => console.error("Erro MongoDB:", err));
-
-// Schema e Model
-const notaSchema = new mongoose.Schema({
-  titulo: { type: String, required: true },
-  texto: { type: String, required: true },
-  criadoEm: { type: Date, default: Date.now },
+// Rota de health check
+app.get("/health", (req, res) => {
+  res.json({ status: "OK", message: "Servidor está funcionando" });
 });
 
-const Nota = mongoose.model("Nota", notaSchema);
-
-// Rota para criar uma nova nota
-app.post("/notas", async (req, res) => {
-  try {
-    console.log("Recebido do frontend:", req.body);
-
-    // Validação básica
-    if (!req.body.titulo || !req.body.texto) {
-      return res.status(400).json({ error: "Título e texto são obrigatórios" });
-    }
-
-    const nota = await Nota.create(req.body);
-    res.status(201).json(nota);
-  } catch (err) {
-    console.error("Erro ao salvar nota:", err.message);
-    res.status(500).json({ error: "Erro no servidor", details: err.message });
-  }
-});
-
-// Rota para listar todas as notas
-app.get("/notas", async (req, res) => {
-  try {
-    const notas = await Nota.find().sort({ criadoEm: -1 });
-    res.json(notas);
-  } catch (err) {
-    res.status(500).json({ error: "Erro ao buscar notas" });
-  }
-});
-
-// Rota para buscar uma nota específica
-app.get("/notas/:id", async (req, res) => {
-  try {
-    const nota = await Nota.findById(req.params.id);
-    if (!nota) {
-      return res.status(404).json({ error: "Nota não encontrada" });
-    }
-    res.json(nota);
-  } catch (err) {
-    res.status(500).json({ error: "Erro ao buscar nota" });
-  }
-});
-
-// Rota para atualizar uma nota
-app.put("/notas/:id", async (req, res) => {
-  try {
-    const { titulo, texto } = req.body;
-
-    // Validação básica
-    if (!titulo || !texto) {
-      return res.status(400).json({ error: "Título e texto são obrigatórios" });
-    }
-
-    const nota = await Nota.findByIdAndUpdate(
-      req.params.id,
-      { titulo, texto },
-      { new: true, runValidators: true }
-    );
-
-    if (!nota) {
-      return res.status(404).json({ error: "Nota não encontrada" });
-    }
-
-    res.json(nota);
-  } catch (err) {
-    console.error("Erro ao atualizar nota:", err);
-    res
-      .status(500)
-      .json({ error: "Erro ao atualizar nota", details: err.message });
-  }
-});
-
-// Rota para excluir uma nota
-app.delete("/notas/:id", async (req, res) => {
-  try {
-    const nota = await Nota.findByIdAndDelete(req.params.id);
-
-    if (!nota) {
-      return res.status(404).json({ error: "Nota não encontrada" });
-    }
-
-    res.json({ message: "Nota excluída com sucesso" });
-  } catch (err) {
-    console.error("Erro ao excluir nota:", err);
-    res
-      .status(500)
-      .json({ error: "Erro ao excluir nota", details: err.message });
-  }
-});
-
-// Rota padrão para verificar se o servidor está funcionando
+// Rota padrão para documentação
 app.get("/", (req, res) => {
-  res.json({ message: "API de Notas funcionando!" });
+  res.json({
+    message: "API de Controle de Frota de Veículos",
+    endpoints: {
+      "GET /notas": "Buscar todos os registros",
+      "POST /notas": "Criar novo registro",
+      "GET /notas/veiculos": "Buscar todos os veículos",
+      "GET /notas/produtos/:placa": "Buscar produtos por placa",
+      "GET /notas/manutencoes/:placa": "Buscar manutenções por placa",
+      "DELETE /notas/:tipo/:id": "Deletar registro",
+    },
+  });
 });
 
-// Iniciar servidor
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+// Error handling middleware
+app.use((error, req, res, next) => {
+  console.error(error);
+  res.status(500).json({ error: "Erro interno do servidor" });
+});
+
+// 404 handler
+app.use("*", (req, res) => {
+  res.status(404).json({ error: "Endpoint não encontrado" });
+});
+
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
+  console.log(`URL: http://localhost:${PORT}`);
+});
