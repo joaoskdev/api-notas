@@ -234,11 +234,7 @@ router.post("/catalogo-produtos", async (req, res) => {
 
 router.put("/catalogo-produtos/:id", async (req, res) => {
   try {
-    const produto = await CatalogoProduto.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
+    const produto = await CatalogoProduto.findByIdAndDelete(req.params.id);
 
     if (!produto) {
       return res.status(404).json({ error: "Produto não encontrado" });
@@ -252,11 +248,10 @@ router.put("/catalogo-produtos/:id", async (req, res) => {
 
 router.delete("/catalogo-produtos/:id", async (req, res) => {
   try {
-    const produto = await CatalogoProduto.findByIdAndUpdate(
-      req.params.id,
-      { ativo: false },
-      { new: true }
-    );
+    const produto = await Produto.findOneAndDelete({
+    _id: req.params.id,
+    placaVeiculo: req.params.placa,
+    });
 
     if (!produto) {
       return res.status(404).json({ error: "Produto não encontrado" });
