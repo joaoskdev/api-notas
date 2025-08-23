@@ -176,11 +176,6 @@ router.post("/produtos/:placa", async (req, res) => {
     const produtoSalvo = await produto.save();
     return res.status(201).json(produtoSalvo);
   } catch (error) {
-    if (error.code === 11000) {
-      return res
-        .status(400)
-        .json({ error: "Este produto já existe neste veículo" });
-    }
     return res.status(400).json({ error: error.message });
   }
 });
