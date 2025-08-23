@@ -142,4 +142,61 @@ router.delete('/:tipo/:id', async (req, res) => {
   }
 });
 
+router.put('/veiculos/:id', async (req, res) => {
+    try {
+        const veiculo = await Veiculo.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true, runValidators: true }
+        );
+        
+        if (!veiculo) {
+            return res.status(404).json({ error: 'Veículo não encontrado' });
+        }
+        
+        res.json(veiculo);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+// DELETE /notas/veiculos/:id - Deletar veículo
+router.delete('/veiculos/:id', async (req, res) => {
+    try {
+        const veiculo = await Veiculo.findByIdAndDelete(req.params.id);
+        
+        if (!veiculo) {
+            return res.status(404).json({ error: 'Veículo não encontrado' });
+        }
+        
+        // Opcional: Deletar também produtos e manutenções associadas
+        await Produto.deleteMany({ placaVeiculo: veiculo.placa });
+        await Manutencao.deleteMany({ placaVeiculo: veiculo.placa });
+        
+        res.json({ message: 'Veículo e dados associados deletados com sucesso' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// GET /notas/manutencoes/:placa - Buscar manutenções por placa
+router.get('/manutencoes/:placa', async (req, res) => {
+    try {
+        const manutencoes = await Manutencao.find({ placaVeiculo: req.params.placa });
+        res.json(manutencoes);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// GET /notas/produtos/:placa - Buscar produtos por placa
+router.get('/produtos/:placa', async (req, res) => {
+    try {
+        const produtos = await Produto.find({ placaVeiculo: req.params.placa });
+        res.json(produtos);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 module.exports = router;
