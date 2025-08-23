@@ -6,17 +6,17 @@ const ProdutoSchema = new mongoose.Schema({
     required: true,
     ref: 'Veiculo'
   },
-  nome: {
-    type: String,
-    required: true,
-    trim: true
+  catalogoProdutoId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'CatalogoProduto',
+    required: true
   },
   quantidade: {
     type: Number,
     required: true,
-    min: 0
+    min: 1
   },
-  descricao: {
+  observacoes: {
     type: String,
     trim: true
   }
@@ -24,7 +24,7 @@ const ProdutoSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Índice para melhor performance nas buscas por veículo
-ProdutoSchema.index({ placaVeiculo: 1 });
+// Índice para melhor performance
+ProdutoSchema.index({ placaVeiculo: 1, catalogoProdutoId: 1 });
 
 module.exports = mongoose.model('Produto', ProdutoSchema);
