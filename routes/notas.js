@@ -210,10 +210,10 @@ router.get("/produtos/:placa", async (req, res) => {
   }
 });
 
-const CatalogoProduto = require('../models/CatalogoProduto');
+const CatalogoProduto = require("../models/CatalogoProduto");
 
 // Rotas para Catálogo de Produtos
-router.get('/catalogo-produtos', async (req, res) => {
+router.get("/catalogo-produtos", async (req, res) => {
   try {
     const produtos = await CatalogoProduto.find({ ativo: true });
     res.json(produtos);
@@ -222,7 +222,7 @@ router.get('/catalogo-produtos', async (req, res) => {
   }
 });
 
-router.post('/catalogo-produtos', async (req, res) => {
+router.post("/catalogo-produtos", async (req, res) => {
   try {
     const produto = new CatalogoProduto(req.body);
     const produtoSalvo = await produto.save();
@@ -232,54 +232,133 @@ router.post('/catalogo-produtos', async (req, res) => {
   }
 });
 
-router.put('/catalogo-produtos/:id', async (req, res) => {
+router.put("/catalogo-produtos/:id", async (req, res) => {
   try {
     const produto = await CatalogoProduto.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true, runValidators: true }
     );
-    
+
     if (!produto) {
-      return res.status(404).json({ error: 'Produto não encontrado' });
+      return res.status(404).json({ error: "Produto não encontrado" });
     }
-    
+
     res.json(produto);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
-router.delete('/catalogo-produtos/:id', async (req, res) => {
+router.delete("/catalogo-produtos/:id", async (req, res) => {
   try {
     const produto = await CatalogoProduto.findByIdAndUpdate(
       req.params.id,
       { ativo: false },
       { new: true }
     );
-    
+
     if (!produto) {
-      return res.status(404).json({ error: 'Produto não encontrado' });
+      return res.status(404).json({ error: "Produto não encontrado" });
     }
-    
-    res.json({ message: 'Produto desativado com sucesso' });
+
+    res.json({ message: "Produto desativado com sucesso" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-router.get('/catalogo-produtos/:id', async (req, res) => {
-    try {
-        const produto = await CatalogoProduto.findById(req.params.id);
-        
-        if (!produto) {
-            return res.status(404).json({ error: 'Produto não encontrado' });
-        }
-        
-        res.json(produto);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+router.get("/catalogo-produtos/:id", async (req, res) => {
+  try {
+    const produto = await CatalogoProduto.findById(req.params.id);
+
+    if (!produto) {
+      return res.status(404).json({ error: "Produto não encontrado" });
     }
+
+    res.json(produto);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get("/produtos/:placa", async (req, res) => {
+  try {
+    const produtos = await Produto.find({
+      placaVeiculo: req.params.placa,
+      ativo: true,
+    });
+    res.json(produtos);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post("/produtos/:placa", async (req, res) => {
+  try {
+    // Verificar se veículo existe
+    const veiculo = await Veiculo.findOne({ placa: req.params.placa });
+    if (!veiculo) {
+      return res.status(404).json({ error: "Veículo não encontrado" });
+    }
+
+    const produto = new Produto({
+      ...req.body,
+      placaVeiculo: req.params.placa,
+    });
+
+    const produtoSalvo = await produto.save();
+    res.status(201).json(produtoSalvo);
+  } catch (error) {
+    if (error.code === 11000) {
+      return res
+        .status(400)
+        .json({ error: "Este produto já existe neste veículo" });
+    }
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.put("/produtos/:placa/:id", async (req, res) => {
+  try {
+    const produto = await Produto.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        placaVeiculo: req.params.placa,
+      },
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    if (!produto) {
+      return res.status(404).json({ error: "Produto não encontrado" });
+    }
+
+    res.json(produto);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.delete("/produtos/:placa/:id", async (req, res) => {
+  try {
+    const produto = await Produto.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        placaVeiculo: req.params.placa,
+      },
+      { ativo: false },
+      { new: true }
+    );
+
+    if (!produto) {
+      return res.status(404).json({ error: "Produto não encontrado" });
+    }
+
+    res.json({ message: "Produto removido com sucesso" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 module.exports = router;

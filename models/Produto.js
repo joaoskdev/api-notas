@@ -6,10 +6,18 @@ const ProdutoSchema = new mongoose.Schema({
     required: true,
     ref: 'Veiculo'
   },
-  catalogoProdutoId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'CatalogoProduto',
-    required: true
+  titulo: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  descricao: {
+    type: String,
+    trim: true
+  },
+  categoria: {
+    type: String,
+    trim: true
   },
   quantidade: {
     type: Number,
@@ -19,12 +27,16 @@ const ProdutoSchema = new mongoose.Schema({
   observacoes: {
     type: String,
     trim: true
+  },
+  ativo: {
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true
 });
 
-// Índice para melhor performance
-ProdutoSchema.index({ placaVeiculo: 1, catalogoProdutoId: 1 });
+// Índice único para evitar produtos duplicados no mesmo veículo
+ProdutoSchema.index({ placaVeiculo: 1, titulo: 1 }, { unique: true });
 
 module.exports = mongoose.model('Produto', ProdutoSchema);
