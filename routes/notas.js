@@ -150,71 +150,6 @@ router.delete("/veiculos/:id", async (req, res) => {
  * =========================
  */
 
-// GET único (sem duplicatas) — lista produtos do veículo
-router.get("/produtos/:placa", async (req, res) => {
-  try {
-    const produtos = await Produto.find({ placaVeiculo: req.params.placa });
-    return res.json(produtos);
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-});
-
-// POST /notas/produtos/:placa — adiciona produto ao veículo
-router.post("/produtos/:placa", async (req, res) => {
-  try {
-    const veiculo = await Veiculo.findOne({ placa: req.params.placa });
-    if (!veiculo) {
-      return res.status(404).json({ error: "Veículo não encontrado" });
-    }
-
-    const produto = new Produto({
-      ...req.body,
-      placaVeiculo: req.params.placa,
-    });
-
-    const produtoSalvo = await produto.save();
-    return res.status(201).json(produtoSalvo);
-  } catch (error) {
-    return res.status(400).json({ error: error.message });
-  }
-});
-
-// PUT /notas/produtos/:placa/:id — atualiza produto do veículo
-router.put("/produtos/:placa/:id", async (req, res) => {
-  try {
-    const produto = await Produto.findOneAndUpdate(
-      { _id: req.params.id, placaVeiculo: req.params.placa },
-      req.body,
-      { new: true, runValidators: true }
-    );
-    if (!produto) {
-      return res.status(404).json({ error: "Produto não encontrado" });
-    }
-    return res.json(produto);
-  } catch (error) {
-    return res.status(400).json({ error: error.message });
-  }
-});
-
-// DELETE /notas/produtos/:placa/:id — HARD DELETE (conserto)
-router.delete("/produtos/:placa/:id", async (req, res) => {
-  try {
-    const produto = await Produto.findOneAndDelete({
-      _id: req.params.id,
-      placaVeiculo: req.params.placa,
-    });
-
-    if (!produto) {
-      return res.status(404).json({ error: "Produto não encontrado" });
-    }
-
-    return res.json({ message: "Produto deletado com sucesso" });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-});
-
 /**
  * =========================
  * MANUTENÇÕES
@@ -251,6 +186,30 @@ router.get("/catalogo-produtos/:veiculoId", async (req, res) => {
   }
 });
 
+router.get("/veiculos/:veiculoId/catalogo-produtos", async (req, res) => {
+  try {
+    const produtos = await CatalogoProduto.find({ veiculo: req.params.veiculoId });
+    return res.json(produtos);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// CRIAR novo produto no catálogo de um veículo
+router.post("/veiculos/:veiculoId/catalogo-produtos", async (req, res) => {
+  try {
+    const produto = new CatalogoProduto({
+      ...req.body,
+      veiculo: req.params.veiculoId,
+    });
+    const produtoSalvo = await produto.save();
+    return res.status(201).json(produtoSalvo);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+});
+
+// GET produto específico do catálogo
 router.get("/catalogo-produtos/:id", async (req, res) => {
   try {
     const produto = await CatalogoProduto.findById(req.params.id);
