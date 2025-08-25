@@ -240,9 +240,11 @@ router.get("/manutencoes/:placa", async (req, res) => {
  */
 
 // GET catálogo (se quiser apenas ativos, troque para { ativo: true })
-router.get("/catalogo-produtos", async (req, res) => {
+router.get("/catalogo-produtos/:veiculoId", async (req, res) => {
   try {
-    const produtos = await CatalogoProduto.find({});
+    const produtos = await CatalogoProduto.find({
+      veiculo: req.params.veiculoId,
+    });
     return res.json(produtos);
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -261,9 +263,12 @@ router.get("/catalogo-produtos/:id", async (req, res) => {
   }
 });
 
-router.post("/catalogo-produtos", async (req, res) => {
+router.post("/catalogo-produtos/:veiculoId", async (req, res) => {
   try {
-    const produto = new CatalogoProduto(req.body);
+    const produto = new CatalogoProduto({
+      ...req.body,
+      veiculo: req.params.veiculoId, // vínculo
+    });
     const produtoSalvo = await produto.save();
     return res.status(201).json(produtoSalvo);
   } catch (error) {
