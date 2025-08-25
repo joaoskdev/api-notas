@@ -244,6 +244,18 @@ router.delete("/catalogo-produtos/:id", async (req, res) => {
   }
 });
 
+router.delete("/produtos/:id", async (req, res) => {
+  try {
+    const produto = await Produto.findByIdAndDelete(req.params.id);
+    if (!produto) {
+      return res.status(404).json({ error: "Produto não encontrado" });
+    }
+    return res.json({ message: "Produto deletado com sucesso" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 /**
  * =========================
  * CATCH-ALL genérico (opcional)
