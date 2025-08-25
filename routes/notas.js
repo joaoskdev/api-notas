@@ -256,6 +256,35 @@ router.delete("/produtos/:id", async (req, res) => {
   }
 });
 
+router.put("/manutencoes/:id", async (req, res) => {
+  try {
+    const manutencao = await Manutencao.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    if (!manutencao) {
+      return res.status(404).json({ error: "Manutenção não encontrada" });
+    }
+    return res.json(manutencao);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+});
+
+// DELETE - Excluir manutenção
+router.delete("/manutencoes/:id", async (req, res) => {
+  try {
+    const manutencao = await Manutencao.findByIdAndDelete(req.params.id);
+    if (!manutencao) {
+      return res.status(404).json({ error: "Manutenção não encontrada" });
+    }
+    return res.json({ message: "Manutenção deletada com sucesso" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 /**
  * =========================
  * CATCH-ALL genérico (opcional)
