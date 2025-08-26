@@ -286,7 +286,7 @@ router.delete("/produtos/:id", async (req, res) => {
   }
 });
 
-router.put("/manutencoes/:id", async (req, res) => {
+router.get("/manutencoes/:id", async (req, res) => {
   try {
     const manutencao = await Manutencao.findByIdAndUpdate(
       req.params.id,
