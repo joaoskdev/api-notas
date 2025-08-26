@@ -186,6 +186,18 @@ router.post("/manutencoes/:placa", async (req, res) => {
   }
 });
 
+router.get("/manutencoes/id/:id", async (req, res) => {
+  try {
+    const manutencao = await Manutencao.findById(req.params.id);
+    if (!manutencao) {
+      return res.status(404).json({ error: "Manutenção não encontrada" });
+    }
+    return res.json(manutencao);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 /**
  * =========================
  * CATÁLOGO DE PRODUTOS
