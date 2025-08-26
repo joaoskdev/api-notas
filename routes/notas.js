@@ -196,15 +196,7 @@ router.get("/manutencoes/id/:id", async (req, res) => {
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
-}); // ...existing code...
-useEffect(() => {
-  if (modalAberto && manutencaoId) {
-    fetch(`/notas/manutencoes/id/${manutencaoId}`)
-      .then((res) => res.json())
-      .then((data) => setForm(data));
-  }
-}, [modalAberto, manutencaoId]);
-// ...existing code...
+});
 
 /**
  * =========================
