@@ -168,6 +168,24 @@ router.get("/manutencoes/:placa", async (req, res) => {
   }
 });
 
+router.post("/manutencoes/:placa", async (req, res) => {
+  try {
+    const novaManutencao = new Manutencao({
+      placaVeiculo: req.params.placa,
+      titulo: req.body.titulo,
+      descricao: req.body.descricao,
+      km: req.body.km,
+      custo: req.body.custo,
+      dataManutencao: req.body.dataManutencao,
+    });
+
+    await novaManutencao.save();
+    return res.status(201).json(novaManutencao);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 /**
  * =========================
  * CATÁLOGO DE PRODUTOS
