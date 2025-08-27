@@ -1,13 +1,7 @@
 const mongoose = require("mongoose");
-const AutoIncrement = require("mongoose-sequence")(mongoose);
 
 const ManutencaoSchema = new mongoose.Schema(
   {
-    id: {
-      type: Number,
-      unique: true,
-    },
-
     placaVeiculo: {
       type: String,
       required: true,
@@ -43,8 +37,6 @@ const ManutencaoSchema = new mongoose.Schema(
   }
 );
 
-ManutencaoSchema.plugin(AutoIncrement, { inc_field: 'id' });
-
 ManutencaoSchema.index({ placaVeiculo: 1 });
 
-module.exports = mongoose.model('Manutencao', ManutencaoSchema);
+module.exports = mongoose.model("Manutencao", ManutencaoSchema);
