@@ -198,6 +198,22 @@ router.get("/manutencoes/id/:id", async (req, res) => {
   }
 });
 
+router.put("/manutencoes/id/:id", async (req, res) => {
+  try {
+    const manutencao = await Manutencao.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    if (!manutencao) {
+      return res.status(404).json({ error: "Manutenção não encontrada" });
+    }
+    return res.json(manutencao);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+});
+
 /**
  * =========================
  * CATÁLOGO DE PRODUTOS
@@ -286,21 +302,24 @@ router.delete("/produtos/:id", async (req, res) => {
   }
 });
 
-router.get("fetch(`${API_URL}/manutencoes/${manutencaoId}`)", async (req, res) => {
-  try {
-    const manutencao = await Manutencao.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
-    if (!manutencao) {
-      return res.status(404).json({ error: "Manutenção não encontrada" });
+router.get(
+  "fetch(`${API_URL}/manutencoes/${manutencaoId}`)",
+  async (req, res) => {
+    try {
+      const manutencao = await Manutencao.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        { new: true, runValidators: true }
+      );
+      if (!manutencao) {
+        return res.status(404).json({ error: "Manutenção não encontrada" });
+      }
+      return res.json(manutencao);
+    } catch (error) {
+      return res.status(400).json({ error: error.message });
     }
-    return res.json(manutencao);
-  } catch (error) {
-    return res.status(400).json({ error: error.message });
   }
-});
+);
 
 // DELETE - Excluir manutenção
 router.delete("/manutencoes/:id", async (req, res) => {
