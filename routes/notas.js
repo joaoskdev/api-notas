@@ -12,6 +12,8 @@ const CatalogoProduto = require("../models/CatalogoProduto");
  * =========================
  */
 
+//codigo alterado
+
 // GET /notas - Buscar todos ou filtrar por tipo/placa
 router.get("/", async (req, res) => {
   try {
